@@ -10,8 +10,13 @@ namespace ecommerce_apple.Controllers.Products
     [Route("api/[controller]")]
     public class AppleProductsController : ControllerBase
     {
-        private IProductCollection db = new ProductCollection();
+        private IProductCollection db;
 
+        public AppleProductsController(IConfiguration configuration)
+        {
+            db = new ProductCollection(configuration);
+        }
+        
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {

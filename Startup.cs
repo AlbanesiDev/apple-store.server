@@ -12,6 +12,11 @@ public class Startup
 
     public IConfiguration Configuration { get; }
 
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton(Configuration);
+    }
+
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app.UseSwagger();

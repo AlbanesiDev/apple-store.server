@@ -10,11 +10,12 @@ namespace ecommerce_apple.Repositories
 {
     public class ProductCollection : IProductCollection
     {
-        internal MongoDBRepository _repository = new MongoDBRepository();
+        internal MongoDBRepository _repository;
         private IMongoCollection<ProductsModel> Collection;
 
-        public ProductCollection()
+        public ProductCollection(IConfiguration configuration)
         {
+            _repository = new MongoDBRepository(configuration);
             Collection = _repository.db.GetCollection<ProductsModel>("Products");
         }
 

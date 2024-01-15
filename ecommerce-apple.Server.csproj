@@ -9,6 +9,7 @@
     <SpaRoot>..\ecommerce-apple.client</SpaRoot>
     <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:4200</SpaProxyServerUrl>
+    <UserSecretsId>bf84f316-c7fa-407a-b808-1cdb9b7e7ee0</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
