@@ -10,6 +10,7 @@ namespace MongoDBAPI.Models
     {
         [BsonId]
         public ObjectId Id { get; set; }
+        public string CollectionName { get; set; }
         public string Model { get; set; }
         public bool? IsSelected { get; set; }
         public string Description { get; set; }
@@ -36,6 +37,7 @@ namespace MongoDBAPI.Models
             Space = new List<string>();
             Images = new List<string>();
 
+            CollectionName = string.Empty;
             Model = string.Empty;
             Description = string.Empty;
             Category = string.Empty;

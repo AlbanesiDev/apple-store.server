@@ -10,19 +10,39 @@ namespace ecommerce_apple.Controllers.Products
     [Route("api/[controller]")]
     public class AppleProductsController : ControllerBase
     {
-        private IProductCollection db;
+        private readonly IProductCollection db;
 
         public AppleProductsController(IConfiguration configuration)
         {
             db = new ProductCollection(configuration);
         }
-        
+
         [HttpGet]
-        public async Task<IActionResult> GetAllProducts()
+        public async Task<IActionResult> GetAllProductsFromAllCollections()
         {
             try
             {
-                var products = await db.GetAllProducts();
+                var allProducts = await db.GetAllProductsFromAllCollections();
+                return Ok(allProducts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error 500: Internal server error {ex.Message}");
+            }
+        }
+
+        [HttpGet("{collectionName}")]
+        public async Task<IActionResult> GetAllProductsByCollectionName(string collectionName)
+        {
+            try
+            {
+                var products = await db.GetAllProductsByCollectionName(collectionName);
+
+                if (products == null || !products.Any())
+                {
+                    return NotFound($"Collection with name '{collectionName}' not found");
+                }
+
                 return Ok(products);
             }
             catch (Exception ex)
@@ -31,12 +51,12 @@ namespace ecommerce_apple.Controllers.Products
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProductsById(string id)
+        [HttpGet("{collectionName}/{id}")]
+        public async Task<IActionResult> GetProductsByCollectionAndId(string collectionName, string id)
         {
             try
             {
-                var product = await db.GetProductsById(id);
+                var product = await db.GetProductsByCollectionAndId(collectionName, id);
 
                 if (product == null)
                 {
@@ -51,8 +71,8 @@ namespace ecommerce_apple.Controllers.Products
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateProduct([FromBody] ProductsModel product)
+        [HttpPost("{collectionName}")]
+        public async Task<IActionResult> CreateProduct(string collectionName, [FromBody] ProductsModel product)
         {
             try
             {
@@ -66,7 +86,7 @@ namespace ecommerce_apple.Controllers.Products
                     return BadRequest("Model is required");
                 }
 
-                await db.InsertProduct(product);
+                await db.InsertProduct(collectionName, product);
                 return Created("Create", true);
             }
             catch (Exception ex)
@@ -75,8 +95,8 @@ namespace ecommerce_apple.Controllers.Products
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct([FromBody] ProductsModel product, string id)
+        [HttpPut("{collectionName}/{id}")]
+        public async Task<IActionResult> UpdateProduct(string collectionName, [FromBody] ProductsModel product, string id)
         {
             try
             {
@@ -86,7 +106,7 @@ namespace ecommerce_apple.Controllers.Products
                 }
 
                 product.Id = new MongoDB.Bson.ObjectId(id);
-                await db.UpdateProduct(product);
+                await db.UpdateProduct(collectionName, product);
 
                 return Created("Update", true);
             }
@@ -96,12 +116,12 @@ namespace ecommerce_apple.Controllers.Products
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(string id)
+        [HttpDelete("{collectionName}/{id}")]
+        public async Task<IActionResult> DeleteProduct(string collectionName, string id)
         {
             try
             {
-                await db.DeleteProduct(id);
+                await db.DeleteProduct(collectionName, id);
                 return NoContent();
             }
             catch (Exception ex)

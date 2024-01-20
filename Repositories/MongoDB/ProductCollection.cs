@@ -8,45 +8,84 @@ using MongoDBAPI.Models;
 
 namespace ecommerce_apple.Repositories
 {
+    /// <summary>
+    /// Repository for accessing and managing product collections in MongoDB.
+    /// </summary>
     public class ProductCollection : IProductCollection
     {
         internal MongoDBRepository _repository;
-        private IMongoCollection<ProductsModel> Collection;
 
+        /// <summary>
+        /// Initializes a new instance of the ProductCollection class.
+        /// </summary>
+        /// <param name="configuration">Application configuration.</param>
         public ProductCollection(IConfiguration configuration)
         {
             _repository = new MongoDBRepository(configuration);
-            Collection = _repository.db.GetCollection<ProductsModel>("Products");
         }
 
-        public async Task<List<ProductsModel>> GetAllProducts()
+        //==========================================================================
+        // Get all products from all collections
+        /// <inheritdoc/>
+        public async Task<List<ProductsModel>> GetAllProductsFromAllCollections()
         {
-            return await Collection.FindAsync(new BsonDocument()).Result.ToListAsync();
+            var allProducts = new List<ProductsModel>();
+
+            foreach (var collectionName in _repository.CollectionNames)
+            {
+                var productsInCollection = await GetAllProductsByCollectionName(collectionName);
+                allProducts.AddRange(productsInCollection);
+            }
+            return allProducts;
         }
 
-        public async Task<ProductsModel> GetProductsById(string id)
+        //==========================================================================
+        // Get all products in a collection
+        /// <inheritdoc/>
+        public async Task<List<ProductsModel>> GetAllProductsByCollectionName(string collectionName)
         {
-            return await Collection.FindAsync(
-                new BsonDocument { { "_id", new ObjectId(id) } }).Result.
-                FirstAsync();
+            var collection = _repository.db.GetCollection<ProductsModel>(collectionName);
+            var filter = Builders<ProductsModel>.Filter.Empty;
+            return await collection.Find(filter).ToListAsync();
         }
 
-        public async Task InsertProduct(ProductsModel product)
+        //==========================================================================
+        // Get products according to collection and id
+        /// <inheritdoc/>
+        public async Task<ProductsModel> GetProductsByCollectionAndId(string collectionName, string id)
         {
-            await Collection.InsertOneAsync(product);
-        }
-
-        public async Task UpdateProduct(ProductsModel product)
-        {
-            var filter = Builders<ProductsModel>.Filter.Eq(s => s.Id, product.Id);
-
-            await Collection.ReplaceOneAsync(filter, product);
-        }
-        
-        public async Task DeleteProduct(string id)
-        {
+            var collection = _repository.db.GetCollection<ProductsModel>(collectionName);
             var filter = Builders<ProductsModel>.Filter.Eq(s => s.Id, new ObjectId(id));
-            await Collection.DeleteOneAsync(filter);
+            return await collection.Find(filter).FirstOrDefaultAsync();
+        }
+
+        //==========================================================================
+        // Insert product according to collection
+        /// <inheritdoc/>
+        public async Task InsertProduct(string collectionName, ProductsModel product)
+        {
+            var collection = _repository.db.GetCollection<ProductsModel>(collectionName);
+            await collection.InsertOneAsync(product);
+        }
+
+        //==========================================================================
+        // Update product according to collection and id
+        /// <inheritdoc/>
+        public async Task UpdateProduct(string collectionName, ProductsModel product)
+        {
+            var collection = _repository.db.GetCollection<ProductsModel>(collectionName);
+            var filter = Builders<ProductsModel>.Filter.Eq(s => s.Id, product.Id);
+            await collection.ReplaceOneAsync(filter, product);
+        }
+
+        //==========================================================================
+        // Delete product according to collection and id
+        /// <inheritdoc/>
+        public async Task DeleteProduct(string collectionName, string id)
+        {
+            var collection = _repository.db.GetCollection<ProductsModel>(collectionName);
+            var filter = Builders<ProductsModel>.Filter.Eq(s => s.Id, new ObjectId(id));
+            await collection.DeleteOneAsync(filter);
         }
     }
 }
