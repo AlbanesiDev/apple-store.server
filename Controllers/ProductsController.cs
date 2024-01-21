@@ -8,11 +8,11 @@ namespace ecommerce_apple.Controllers.Products
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AppleProductsController : ControllerBase
+    public class ProductsController : ControllerBase
     {
         private readonly IProductCollection db;
 
-        public AppleProductsController(IConfiguration configuration)
+        public ProductsController(IConfiguration configuration)
         {
             db = new ProductCollection(configuration);
         }
@@ -31,19 +31,33 @@ namespace ecommerce_apple.Controllers.Products
             }
         }
 
+        [HttpGet("collection-names")]
+        public async Task<ActionResult<List<string>>> GetCollectionNames()
+        {
+            try
+            {
+                var collectionNames = await db.GetCollectionNames();
+                return Ok(collectionNames);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
         [HttpGet("{collectionName}")]
         public async Task<IActionResult> GetAllProductsByCollectionName(string collectionName)
         {
             try
             {
-                var products = await db.GetAllProductsByCollectionName(collectionName);
+                var product = await db.GetAllProductsByCollectionName(collectionName);
 
-                if (products == null || !products.Any())
+                if (product == null)
                 {
-                    return NotFound($"Collection with name '{collectionName}' not found");
+                    return NotFound($"Collection with name {collectionName} not found");
                 }
 
-                return Ok(products);
+                return Ok(product);
             }
             catch (Exception ex)
             {
@@ -80,12 +94,6 @@ namespace ecommerce_apple.Controllers.Products
                 {
                     return BadRequest();
                 }
-
-                if (string.IsNullOrEmpty(product.Model))
-                {
-                    return BadRequest("Model is required");
-                }
-
                 await db.InsertProduct(collectionName, product);
                 return Created("Create", true);
             }

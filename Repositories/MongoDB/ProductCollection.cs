@@ -25,6 +25,14 @@ namespace ecommerce_apple.Repositories
         }
 
         //==========================================================================
+        // Get the name of collections
+        /// <inheritdoc/>
+        public async Task<List<string>> GetCollectionNames()
+        {
+            return await _repository.GetCollectionNames();
+        }
+
+        //==========================================================================
         // Get all products from all collections
         /// <inheritdoc/>
         public async Task<List<ProductsModel>> GetAllProductsFromAllCollections()

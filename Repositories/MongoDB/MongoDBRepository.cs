@@ -54,10 +54,18 @@ namespace ecommerce_apple.Repositories
             var options = new ListCollectionNamesOptions { Filter = filter };
 
             // Use ListCollectionNames to get the names of all collections in the database
-            using (var cursor = db.ListCollectionNames(options))
-            {
-                CollectionNames = cursor.ToList();
-            }
+            using var cursor = db.ListCollectionNames(options);
+            CollectionNames = cursor.ToList();
+        }
+
+        public async Task<List<string>> GetCollectionNames()
+        {
+            var filter = new BsonDocument();
+            var options = new ListCollectionNamesOptions { Filter = filter };
+
+            // Use ListCollectionNamesAsync to get the names of all collections in the database asynchronously
+            using var cursor = await db.ListCollectionNamesAsync(options);
+            return cursor.ToList();
         }
     }
 }

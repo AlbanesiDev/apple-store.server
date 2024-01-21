@@ -13,6 +13,12 @@ namespace ecommerce_apple.Repositories
     public interface IProductCollection
     {
         /// <summary>
+        /// Gets all the names of the collections.
+        /// </summary>
+        /// <returns>A list of names of all collections.</returns>
+        Task<List<string>> GetCollectionNames();
+
+        /// <summary>
         /// Gets all products from all collections.
         /// </summary>
         /// <returns>A list of products from all collections.</returns>
